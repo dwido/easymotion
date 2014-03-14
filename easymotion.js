@@ -12,7 +12,7 @@
     // Track mouse events, calculate movement, start, stop events
     function EasyMotion(element, options) {
         var defaults = {
-            popDistance: 50,
+            popDistance: 100,
             bubble: $('[data-easymotion=bubble]')
         }
         options = options || {};
@@ -151,7 +151,7 @@
                 top: t.B.y + offsetY
             }
 
-            options.bubble.offset(position);
+            options.bubble.offset(position).addClass('pop');
             mouseTracker.detach();
 
         }
