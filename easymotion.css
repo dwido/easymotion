@@ -23,7 +23,7 @@ button:nth-child(4) {
 }
 
 body {
-    background: url('http://www.cameronmoll.com/img/pics/960grid.png');
+    /* background: url('http://www.cameronmoll.com/img/pics/960grid.png'); */
 }
 
 .on-target {
@@ -75,3 +75,58 @@ body {
   }
 }
 
+.easymotion-bubbled {
+    border: 2px dashed orange;
+    padding-right: 35px;
+    -webkit-animation: button-bubbled 300ms;
+    animation: button-bubbled 300ms;
+}
+
+.easymotion-bubbled:after {
+    content: url('david-arrow-btn.png');
+    position: absolute;
+    right: 3px;
+    top: 3px;
+    animation: button-bubbled-arrow 300ms;
+    -webkit-animation: button-bubbled-arrow 300ms;
+}
+
+@keyframes button-bubbled {
+  from {
+    padding-right: 0px; 
+  }
+
+  to {
+    padding-right: 33px;
+  }
+}
+
+@-webkit-keyframes button-bubbled {
+  from {
+    padding-right: 0px; 
+  }
+
+  to {
+    padding-right: 33px;
+  }
+}
+
+@keyframes button-bubbled-arrow {
+  from {
+    right: 25px; 
+  }
+
+  to {
+    right: 3px;
+  }
+}
+
+@-webkit-keyframes button-bubbled-arrow {
+  from {
+    right: 25px; 
+  }
+
+  to {
+    right: 3px;
+  }
+}

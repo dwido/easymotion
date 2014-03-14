@@ -152,18 +152,14 @@
             }
 
             options.bubble.offset(position).addClass('pop');
+            topCandidate.el.addClass('easymotion-bubbled');
+            options.bubble.click(function() {
+                topCandidate.el.click();
+                return false;
+            })
+
             mouseTracker.detach();
 
-        }
-        this.draw = function (start, end ) {
-            var ctx = document.getElementById('canvas').getContext('2d');
-
-            ctx.fillStyle = "red";
-
-            ctx.beginPath();
-            ctx.moveTo(start.x, start.y);
-            ctx.lineTo(end.x, end.y);
-            ctx.stroke();
         }
     }
 
