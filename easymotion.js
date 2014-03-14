@@ -11,6 +11,11 @@
 
     // Track mouse events, calculate movement, start, stop events
     function EasyMotion(element, options) {
+        var defaults = {
+            popDistance: 50
+        }
+        options = options || {};
+        _.defaults(options, defaults);
         var mouseTracker = new MouseTracker({
             onStart: function () {
                 console.log('mouse start');
@@ -23,6 +28,7 @@
             onStop: function (samples) {
                 var lastSample = _.last(samples);
                 console.log('mouse stop, last sample: x:' + lastSample.x + ' y:' + lastSample.y);
+                mouseTracker.reset();
             }
         }, this)
         
@@ -53,40 +59,57 @@
         // small lambda with smaller distance will be used to determined
         // the best candidate from the targets
         this.onSample = function(samples) {
-            var b, // startDistance the vertice across from B
-                a,
-                c,
+            var a, b, c, // vertices
+                A, B, C, //points
                 alpha, // endDistance; the vertice across from A
                 candidates = [],
                 n = samples.length,
-                start = samples[n - 2], // before last sample
+                start = samples[0], // before last sample
                 last = samples[n - 1]; // last sample
 
             positions.forEach(function (position) {
-                b = Math.sqrt(Math.pow((start.x - position.offset.left), 2) + Math.pow((start.y - position.offset.top), 2));
-                a = Math.sqrt(Math.pow((last.x - position.offset.left), 2) + Math.pow((last.y - position.offset.top), 2));
-                c = Math.sqrt(Math.pow((last.x - start.x), 2) + Math.pow((last.y - start.y), 2));
+                A = start;
+                B = last;
+                C = {
+                    x: position.offset.left,
+                    y: position.offset.top
+                };
+                b = Math.sqrt(Math.pow((A.x - C.x), 2) + Math.pow((A.y - C.y), 2));
+                a = Math.sqrt(Math.pow((B.x - C.x), 2) + Math.pow((B.y - C.y), 2));
+                c = Math.sqrt(Math.pow((B.x - A.x), 2) + Math.pow((B.y - A.y), 2));
 
                 alpha = Math.acos((Math.pow(a, 2) + Math.pow(b, 2) - Math.pow(c, 2)) / (2 * a * b))
                 // convert to degrees
                 alpha = alpha * (180 / Math.PI);
                 //position.el.text('a: ' + Math.floor(a) + 'b: ' + Math.floor(b) + 'c:' + Math.floor(c) + ' alpha: ' + alpha);
                 if (a < b && alpha < 5) {
-                    candidates.push({el: position.el, alpha: alpha});
+                    candidates.push({
+                        el: position.el, 
+                        triangle: {
+                            alpha: alpha,
+                            a: a,
+                            b: b,
+                            c: c,
+                            A: A,
+                            B: B,
+                            C: C
+                        }
+                        });
                 } else {
                     position.el.removeClass('on-target');
                 }
                 candidates.sort(function (a, b) {
-                    return a - b;
+                    return a.triangle.alpha - b.triangle.alpha;
                 })
                 if (candidates.length) {
-                    candidates[0].el.addClass('on-target');
+                    this.popCandidate(candidates[0]);
                 }
             }.bind(this))
             // clear the timeout to continue tracking
             //clearTimeout(this.timeout);
             //this.timeout = null;
         }
+
         this.setTargetsLocation = function () {
             positions = [];
             for(var i = 0; i < targets.length; i++) {
@@ -95,6 +118,30 @@
                     offset: targets[i].offset()
                 });
             }
+        }
+
+        this.popCandidate = function (candidate, samples) {
+            // calculate  
+            candidate.el.addClass('on-target');
+            var ratio = options.popDistance / candidate.triangle.a;
+            console.log('ration' + ratio);
+            /*
+            this.draw(_.last(samples),
+            {
+                x: candidate.position.offset.left, 
+                y: candidate.position.offset.top
+            });
+            */
+        }
+        this.draw = function (start, end ) {
+            var ctx = document.getElementById('canvas').getContext('2d');
+
+            ctx.fillStyle = "red";
+
+            ctx.beginPath();
+            ctx.moveTo(start.x, start.y);
+            ctx.lineTo(end.x, end.y);
+            ctx.stroke();
         }
     }
 

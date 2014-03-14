@@ -69,5 +69,9 @@ var MouseTracker = function MouseTracker (options, context) {
     this.isAttached = function () {
         return attached;
     }
+
+    this.reset = function () {
+        samples = [];
+    }
 };
 
