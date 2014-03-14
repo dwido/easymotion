@@ -24,6 +24,7 @@ var MouseTracker = function MouseTracker (options, context) {
     }
     this.detach = function () {
         $(window).unbind("mousemove");
+        clearInterval(interval);
         attached = false;
     }
     // this function is throttled for efficiency so tracking the mouse
@@ -39,7 +40,7 @@ var MouseTracker = function MouseTracker (options, context) {
     }, options.sampleRate)
 
     this.mouseStopped = function () {
-        console.log('mouse stopped');
+        //console.log('mouse stopped');
         if (options.onStop) {
             options.onStop.call(context, samples);
         }
@@ -47,7 +48,7 @@ var MouseTracker = function MouseTracker (options, context) {
 
     // private functions
     var after = function () {
-        console.log('in after')
+        //console.log('in after')
         if (samples.length >= 100) {
             samples = samples.slice(80); // make sure no more than 100 samples
         }

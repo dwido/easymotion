@@ -29,3 +29,17 @@ body {
 .on-target {
     border: 2px dashed red;
 }
+
+[data-easymotion=bubble] {
+    position: absolute;
+    width: 52px;
+    height: 52px;
+    /*
+    margin-top: -26px;
+    margin-left: -26px;
+    */
+}
+[data-easymotion=bubble] img {
+    margin-left: -50%;
+    margin-top: -50%;
+}

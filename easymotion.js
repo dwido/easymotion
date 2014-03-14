@@ -12,7 +12,8 @@
     // Track mouse events, calculate movement, start, stop events
     function EasyMotion(element, options) {
         var defaults = {
-            popDistance: 50
+            popDistance: 50,
+            bubble: $('[data-easymotion=bubble]')
         }
         options = options || {};
         _.defaults(options, defaults);
@@ -22,13 +23,14 @@
             },
             onSample: function (samples) {
                 var lastSample = _.last(samples);
-                console.log('mouse on sample, last sample: x:' + lastSample.x + ' y:' + lastSample.y);
+                //console.log('mouse on sample, last sample: x:' + lastSample.x + ' y:' + lastSample.y);
                 this.onSample(samples);
             },
             onStop: function (samples) {
                 var lastSample = _.last(samples);
-                console.log('mouse stop, last sample: x:' + lastSample.x + ' y:' + lastSample.y);
+                //console.log('mouse stop, last sample: x:' + lastSample.x + ' y:' + lastSample.y);
                 mouseTracker.reset();
+                this.popCandidate(samples);
             }
         }, this)
         
@@ -59,6 +61,16 @@
         // small lambda with smaller distance will be used to determined
         // the best candidate from the targets
         this.onSample = function(samples) {
+            var candidates = this.calcCandidates(samples);
+            targets.forEach(function(target) {
+                target.removeClass('on-target');
+            })
+            if (candidates.length) {
+                candidates[0].el.addClass('on-target');
+            }
+        };
+
+        this.calcCandidates = function (samples) {
             var a, b, c, // vertices
                 A, B, C, //points
                 alpha, // endDistance; the vertice across from A
@@ -94,21 +106,15 @@
                             B: B,
                             C: C
                         }
-                        });
-                } else {
-                    position.el.removeClass('on-target');
+                    });
                 }
                 candidates.sort(function (a, b) {
                     return a.triangle.alpha - b.triangle.alpha;
                 })
-                if (candidates.length) {
-                    this.popCandidate(candidates[0]);
-                }
             }.bind(this))
-            // clear the timeout to continue tracking
-            //clearTimeout(this.timeout);
-            //this.timeout = null;
-        }
+
+            return candidates;
+        };
 
         this.setTargetsLocation = function () {
             positions = [];
@@ -118,20 +124,36 @@
                     offset: targets[i].offset()
                 });
             }
-        }
+        };
 
-        this.popCandidate = function (candidate, samples) {
-            // calculate  
-            candidate.el.addClass('on-target');
-            var ratio = options.popDistance / candidate.triangle.a;
-            console.log('ration' + ratio);
-            /*
-            this.draw(_.last(samples),
-            {
-                x: candidate.position.offset.left, 
-                y: candidate.position.offset.top
-            });
-            */
+        this.popCandidate = function (samples) {
+            var candidates = this.calcCandidates(samples),
+                topCandidate,
+                t,
+                ratio,
+                offsetX,    // offset X from last mouse location (B)
+                offsetY,
+                position;    // offset Y from last mouse location (B)
+
+            if (!candidates.length) return;
+            
+            
+            topCandidate = candidates[0];
+            t = topCandidate.triangle;
+            
+            // calculate  location of bubble
+            ratio = options.popDistance / t.a;
+            offsetX = (t.C.x - t.B.x) * ratio 
+            offsetY = (t.C.y - t.B.y) * ratio 
+
+            position = {
+                left: t.B.x + offsetX,
+                top: t.B.y + offsetY
+            }
+
+            options.bubble.offset(position);
+            mouseTracker.detach();
+
         }
         this.draw = function (start, end ) {
             var ctx = document.getElementById('canvas').getContext('2d');
