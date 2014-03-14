@@ -91,6 +91,12 @@ body {
     -webkit-animation: button-bubbled-arrow 300ms;
 }
 
+.easymotion-bubbled-mouseover {
+    color: #ffffff;
+    background-color: #3276b1;
+    border-color: #285e8e;
+}
+
 @keyframes button-bubbled {
   from {
     padding-right: 0px; 

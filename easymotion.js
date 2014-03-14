@@ -157,6 +157,12 @@
                 topCandidate.el.click();
                 return false;
             })
+            options.bubble.mouseover(function () {
+                topCandidate.el.addClass('easymotion-bubbled-mouseover');
+            })
+            options.bubble.mouseout(function () {
+                topCandidate.el.removeClass('easymotion-bubbled-mouseover');
+            })
 
             mouseTracker.detach();
 
