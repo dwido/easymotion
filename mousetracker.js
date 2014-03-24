@@ -21,11 +21,14 @@ var MouseTracker = function MouseTracker (options, context) {
     this.attach = function () {
         $(window).mousemove(this.onMousemove.bind(this));
         attached = true;
+        return this;
     }
     this.detach = function () {
         $(window).unbind("mousemove");
         clearInterval(interval);
+        interval = null;
         attached = false;
+        return this;
     }
     // this function is throttled for efficiency so tracking the mouse
     // will be taking less processing
@@ -73,6 +76,7 @@ var MouseTracker = function MouseTracker (options, context) {
 
     this.reset = function () {
         samples = [];
+        return this;
     }
 };
 
