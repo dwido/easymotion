@@ -1,3 +1,14 @@
+/* ========================================================================
+ * David Buchbut: easymotion.js v0.1
+ * ========================================================================
+ * Licensed under MIT (https://github.com/dwido/easymotion)
+ * ======================================================================== 
+ * easy motion is a jquery plugin to predict mouse movements and allow 
+ * use to have short cuts 
+ * move your mouse slowly towards a clickable item once stopped a little
+ * bubble will apear between the mouse and the clickable and the user can
+ * short cut it */
+
 +function ($) {
     'use strict';
 
@@ -9,7 +20,6 @@
         easymotion;
 
 
-    // Track mouse events, calculate movement, start, stop events
     function EasyMotion(element, options) {
         var defaults = {
             popDistance: 50,
@@ -17,30 +27,33 @@
         }
         options = options || {};
         _.defaults(options, defaults);
+
+        // Track mouse events, calculate movement, start, stop events
         var mouseTracker = new MouseTracker({
             onStart: function () {
                 console.log('mouse start');
             },
             onSample: function (samples) {
-                var lastSample = _.last(samples);
-                //console.log('mouse on sample, last sample: x:' + lastSample.x + ' y:' + lastSample.y);
                 this.onSample(samples);
             },
             onStop: function (samples) {
-                var lastSample = _.last(samples);
-                //console.log('mouse stop, last sample: x:' + lastSample.x + ' y:' + lastSample.y);
                 mouseTracker.reset();
                 this.popCandidate(samples);
             }
         }, this)
         
+        // when a new clickable is added as a target
         this.addItem = function ($el) {
             targets.push($el);
             if (!mouseTracker.isAttached()) {
                 mouseTracker.attach();
             }
+
+            // calculate the location of clickables
             this.setTargetsLocation();
         }
+
+        // remove clickable
         this.removeItem = function ($el) {
             var itemIndex = targets.indexOf($el);
             if (itemIndex > -1) {
@@ -51,6 +64,20 @@
             }
         }
 
+        this.onSample = function(samples) {
+            var candidates = this.calcCandidates(samples);
+            targets.forEach(function(target) {
+                // add css class to allow the user to customize the apparence
+                target.removeClass('on-target');
+            })
+            if (candidates.length) {
+                candidates[0].el.addClass('on-target');
+            }
+        };
+
+        // calculate which target the mouse is moving towards using geometric
+        // calculations:
+        //
         // assumes triangle where:
         // A - start Point
         // B - sample Point (end)
@@ -60,16 +87,6 @@
         // the cursor moves towards the target
         // small lambda with smaller distance will be used to determined
         // the best candidate from the targets
-        this.onSample = function(samples) {
-            var candidates = this.calcCandidates(samples);
-            targets.forEach(function(target) {
-                target.removeClass('on-target');
-            })
-            if (candidates.length) {
-                candidates[0].el.addClass('on-target');
-            }
-        };
-
         this.calcCandidates = function (samples) {
             var a, b, c, // vertices
                 A, B, C, //points
@@ -80,6 +97,7 @@
                 last = samples[n - 1]; // last sample
 
             positions.forEach(function (position) {
+                // calculate the triangle between mouse and clickable
                 A = start;
                 B = last;
                 C = {
@@ -93,7 +111,6 @@
                 alpha = Math.acos((Math.pow(a, 2) + Math.pow(b, 2) - Math.pow(c, 2)) / (2 * a * b))
                 // convert to degrees
                 alpha = alpha * (180 / Math.PI);
-                //position.el.text('a: ' + Math.floor(a) + 'b: ' + Math.floor(b) + 'c:' + Math.floor(c) + ' alpha: ' + alpha);
                 if (a < b && alpha < 5) {
                     candidates.push({
                         el: position.el, 
@@ -116,6 +133,7 @@
             return candidates;
         };
 
+        // save the location of all targets for efficiency
         this.setTargetsLocation = function () {
             positions = [];
             for(var i = 0; i < targets.length; i++) {
@@ -126,6 +144,7 @@
             }
         };
 
+        // show a popup between the mouse and the clickable
         this.popCandidate = function (samples) {
             var candidates = this.calcCandidates(samples),
                 topCandidate,

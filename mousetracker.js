@@ -1,8 +1,16 @@
+/* ========================================================================
+ * David Buchbut: mousetracker.js v0.1
+ * ========================================================================
+ * Licensed under MIT (https://github.com/dwido/easymotion)
+ * ======================================================================== 
+ * mouse tracker is a mouse tracking class which allows the user to sample
+ * mouse movement and subscribe to mouse start move and end events       */
+
 var MouseTracker = function MouseTracker (options, context) {
     // private properties
     var defaults = {
-            sampleRate: 10, // sample rate to sample mouse
-            reportRate: 100 // call to onMove
+            sampleRate: 10, // sample rate to sample mouse deliberately low to not stress the event system
+            reportRate: 100 // how often we call onMove
         },
         attached = false,
         timeout,
@@ -16,13 +24,14 @@ var MouseTracker = function MouseTracker (options, context) {
 
     _.defaults(options, defaults);
     
-    // Events
-    // this.onMove = function (A, B);
+    // listen to mouse events
     this.attach = function () {
         $(window).mousemove(this.onMousemove.bind(this));
         attached = true;
         return this;
     }
+
+    // stop listening to mouse events
     this.detach = function () {
         $(window).unbind("mousemove");
         clearInterval(interval);
@@ -30,12 +39,13 @@ var MouseTracker = function MouseTracker (options, context) {
         attached = false;
         return this;
     }
+
     // this function is throttled for efficiency so tracking the mouse
     // will be taking less processing
     this.onMousemove = _.throttle(function (e) {
         if (!interval) {
             samples = [];
-            interval = setInterval(after.bind(this), 100);
+            interval = setInterval(after.bind(this), options.reportRate);
             samples.push({x: e.pageX, y: e.pageY});
         } else {
             last = {x: e.pageX, y: e.pageY};
@@ -43,7 +53,6 @@ var MouseTracker = function MouseTracker (options, context) {
     }, options.sampleRate)
 
     this.mouseStopped = function () {
-        //console.log('mouse stopped');
         if (options.onStop) {
             options.onStop.call(context, samples);
         }
